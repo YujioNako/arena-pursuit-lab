@@ -1,0 +1,180 @@
+{
+  "sourceSHA256": {
+    "dist/engine.js": "9d99f0d5a5a9c7a20493651dfbb1699edd4ad4e76d0baee8542abdd939227100",
+    "dist/trainer.js": "5c4e7716a3583aed2c005fd90a84517fa795bd7af6ce4ae971743437a656590c",
+    "dist/worker.js": "f6208627df6d8896b62f2555099ca55d330e121bd24d5185b48132fdac57c44f"
+  },
+  "benchmarkDescription": "Each run: 500 generations, then 200 identical fresh seeds, independent of training, acceptance validation and UI reports. No model-selection use.",
+  "runs": [
+    {
+      "config": {
+        "sigma": 0.02,
+        "population": 4,
+        "scenarios": 16,
+        "seed": 42,
+        "generations": 500,
+        "mode": "neural",
+        "fixedSpeed": 8
+      },
+      "episodes": 128928,
+      "accepted": 17,
+      "summaries": [
+        {
+          "generation": 0,
+          "selfPlay": {
+            "captureRate": 0.815,
+            "bull": 77.88644071071332,
+            "runner": 22.113559289286705,
+            "time": 14.632186186782675,
+            "bullWall": 0.009600000000000004,
+            "runnerWall": 0.008800000000000004
+          },
+          "bullVsInitialRunner": {
+            "captureRate": 0.815,
+            "bull": 77.88644071071332,
+            "runner": 22.113559289286705,
+            "time": 14.632186186782675,
+            "bullWall": 0.009600000000000004,
+            "runnerWall": 0.008800000000000004
+          },
+          "runnerVsInitialBull": {
+            "captureRate": 0.815,
+            "bull": 77.88644071071332,
+            "runner": 22.113559289286705,
+            "time": 14.632186186782675,
+            "bullWall": 0.009600000000000004,
+            "runnerWall": 0.008800000000000004
+          },
+          "runnerVsDirectPursuit": {
+            "captureRate": 0.455,
+            "bull": 58.85265577827664,
+            "runner": 41.147344221723344,
+            "time": 19.133543086485695,
+            "bullWall": 0,
+            "runnerWall": 0.008600000000000003
+          }
+        },
+        {
+          "generation": 500,
+          "selfPlay": {
+            "captureRate": 0.985,
+            "bull": 93.55520534925058,
+            "runner": 6.4447946507494365,
+            "time": 5.834451864874857,
+            "bullWall": 0.003600000000000002,
+            "runnerWall": 0.007850000000000003
+          },
+          "bullVsInitialRunner": {
+            "captureRate": 0.965,
+            "bull": 92.35501285128653,
+            "runner": 7.644987148713508,
+            "time": 6.221411469111316,
+            "bullWall": 0.002750000000000001,
+            "runnerWall": 0.009300000000000004
+          },
+          "runnerVsInitialBull": {
+            "captureRate": 0.775,
+            "bull": 76.20883304980347,
+            "runner": 23.7911669501965,
+            "time": 14.702360640005447,
+            "bullWall": 0.0028500000000000014,
+            "runnerWall": 0.007800000000000002
+          },
+          "runnerVsDirectPursuit": {
+            "captureRate": 0.465,
+            "bull": 59.365723637360915,
+            "runner": 40.6342763626391,
+            "time": 19.028587328725063,
+            "bullWall": 0,
+            "runnerWall": 0.007050000000000004
+          }
+        }
+      ]
+    },
+    {
+      "config": {
+        "sigma": 0.02,
+        "population": 4,
+        "scenarios": 16,
+        "seed": 43,
+        "generations": 500,
+        "mode": "neural",
+        "fixedSpeed": 8
+      },
+      "episodes": 131760,
+      "accepted": 24,
+      "summaries": [
+        {
+          "generation": 0,
+          "selfPlay": {
+            "captureRate": 0.73,
+            "bull": 73.45342545792153,
+            "runner": 26.546574542078453,
+            "time": 15.653022616443657,
+            "bullWall": 0.004850000000000002,
+            "runnerWall": 0.0038000000000000017
+          },
+          "bullVsInitialRunner": {
+            "captureRate": 0.73,
+            "bull": 73.45342545792153,
+            "runner": 26.546574542078453,
+            "time": 15.653022616443657,
+            "bullWall": 0.004850000000000002,
+            "runnerWall": 0.0038000000000000017
+          },
+          "runnerVsInitialBull": {
+            "captureRate": 0.73,
+            "bull": 73.45342545792153,
+            "runner": 26.546574542078453,
+            "time": 15.653022616443657,
+            "bullWall": 0.004850000000000002,
+            "runnerWall": 0.0038000000000000017
+          },
+          "runnerVsDirectPursuit": {
+            "captureRate": 0.51,
+            "bull": 62.1194065460131,
+            "runner": 37.88059345398694,
+            "time": 18.087214511440934,
+            "bullWall": 0,
+            "runnerWall": 0.003000000000000001
+          }
+        },
+        {
+          "generation": 500,
+          "selfPlay": {
+            "captureRate": 0.98,
+            "bull": 93.3380800104191,
+            "runner": 6.661919989580865,
+            "time": 5.851992240489693,
+            "bullWall": 0,
+            "runnerWall": 0.0008
+          },
+          "bullVsInitialRunner": {
+            "captureRate": 0.98,
+            "bull": 93.7915689525653,
+            "runner": 6.208431047434772,
+            "time": 5.40242873479527,
+            "bullWall": 0,
+            "runnerWall": 0.003200000000000001
+          },
+          "runnerVsInitialBull": {
+            "captureRate": 0.69,
+            "bull": 71.06017646743112,
+            "runner": 28.939823532568848,
+            "time": 16.430410656002213,
+            "bullWall": 0.0029000000000000015,
+            "runnerWall": 0.0010000000000000002
+          },
+          "runnerVsDirectPursuit": {
+            "captureRate": 0.44,
+            "bull": 58.198564118532005,
+            "runner": 41.80143588146793,
+            "time": 19.18212573055688,
+            "bullWall": 0,
+            "runnerWall": 0.00025
+          }
+        }
+      ]
+    }
+  ]
+}

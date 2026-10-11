@@ -23,8 +23,12 @@ jobs:
           node --check dist/app.js
           node --check dist/engine.js
           node --check dist/worker.js
+          node --check dist/trainer.js
+          node --check dist/experiment.js
       - name: Verify physics and training
         run: npm test
+      - name: Verify 500-generation learning regression
+        run: npm run test:learning
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload static site

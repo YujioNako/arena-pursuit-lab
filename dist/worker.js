@@ -1,7 +1,29 @@
-import {makePolicy,simulate,rng,normal,COUNT} from './engine.js';
-let bull,runner,busy=false,stop=false,gen=0,serial=0,session=1;
+import {makePolicy,simulate} from './engine.js';
+import {createTrainer,validTrainer,normalizeConfig,updateGeneration,benchmark,average} from './trainer.js';
+let bull,runner,trainer,busy=false,stop=false,gen=0,serial=0,session=1;
 const yieldTask=()=>new Promise(r=>setTimeout(r,0));
-function group(b,m,c,seeds,phase,generation,candidate){const episodes=seeds.map(seed=>({seed,...simulate(b,m,c,seed)}));const item={id:++serial,session,generation,candidate,phase,config:{...c},bull:[...b],runner:[...m],episodes:episodes.map(({frames,...e})=>e)};postMessage({type:'group',item});return episodes;}
-const mean=(xs,key)=>xs.reduce((a,x)=>a+x[key],0)/xs.length;
-async function train(c){busy=true;stop=false;postMessage({type:'busy',busy:true});try{for(let k=0;k<c.generations&&!stop;k++){const generation=++gen,role=c.mode!=='neural'?'runner':generation%2?'bull':'runner',r=rng((c.seed+generation*100003)>>>0),seeds=Array.from({length:c.scenarios},()=>Math.floor(r()*4294967296));const current=role==='bull'?bull:runner;let best=[...current],base=group(bull,runner,c,seeds,'训练',generation,'基线'),bestScore=mean(base,role);for(let p=0;p<c.population&&!stop;p++){const noise=Array.from({length:COUNT},()=>normal(r));for(const sign of [1,-1]){if(stop)break;const candidate=current.map((w,i)=>w+sign*c.sigma*noise[i]);const b=role==='bull'?candidate:bull,m=role==='runner'?candidate:runner;const results=group(b,m,c,seeds,'训练',generation,`${p+1}${sign>0?'+':'−'}`),fitness=mean(results,role);if(fitness>bestScore){bestScore=fitness;best=candidate;}postMessage({type:'progress',generation,role,candidate:p*2+(sign>0?1:2),total:c.population*2});await yieldTask();}}if(role==='bull')bull=best;else runner=best;const results=group(bull,runner,c,Array.from({length:8},(_,i)=>(c.seed+0x70000000+i*7919)>>>0),'测试',generation,'独立测试');postMessage({type:'generation',generation,role,bull,runner,metrics:{generation,bull:mean(results,'bull'),runner:mean(results,'runner'),win:results.filter(x=>x.caught).length/results.length,time:mean(results,'time'),mode:c.mode}});await yieldTask();}}catch(e){postMessage({type:'error',message:e.message});}busy=false;postMessage({type:'busy',busy:false});}
-onmessage=async({data:d})=>{if(d.type==='stop'){stop=true;return;}if(busy)return;if(d.type==='init'){bull=makePolicy(d.seed,'bull',true);runner=makePolicy(d.seed+1,'runner',true);postMessage({type:'ready',bull,runner});}if(d.type==='train')train(d.config);if(d.type==='reset'){session++;gen=0;bull=makePolicy(d.seed,'bull',d.warm);runner=makePolicy(d.seed+1,'runner',d.warm);postMessage({type:'ready',bull,runner});}if(d.type==='load'){bull=d.bull;runner=d.runner;gen=d.generation||0;session++;postMessage({type:'ready',bull,runner});}if(d.type==='evaluate'){const results=group(bull,runner,d.config,Array.from({length:8},(_,i)=>(d.config.seed+0x50000000+d.run*1009+i*7919)>>>0),'测试',gen,'额外测试');postMessage({type:'evaluated',bull:mean(results,'bull'),runner:mean(results,'runner'),win:results.filter(x=>x.caught).length/8});}if(d.type==='duel')group(bull,runner,d.config,[d.seed],'演示',gen,'当前策略');};
+function record(bucket,c,phase,generation,candidate){postMessage({type:'group',item:{id:++serial,session,generation,candidate,phase,config:{...c,...bucket.config},bull:[...bucket.bull],runner:[...bucket.runner],episodes:bucket.episodes}});}
+function group(b,m,c,seeds,phase,generation,candidate){const episodes=seeds.map(seed=>{const {frames,...e}=simulate(b,m,c,seed);return {seed,...e};});record({bull:b,runner:m,config:c,episodes},c,phase,generation,candidate);return episodes;}
+function ready(){postMessage({type:'ready',bull,runner,trainer});}
+function report(c,generation){const metrics=benchmark(trainer,bull,runner,c,b=>record(b,c,'测试',generation,'固定基准 / 不参与选权'));postMessage({type:'benchmark',generation,metrics});return metrics;}
+async function train(raw){busy=true;stop=false;postMessage({type:'busy',busy:true});const c=normalizeConfig(raw);try{
+  report(c,gen);await yieldTask();
+  for(let k=0;k<c.generations&&!stop;k++){
+    const generation=gen+1;
+    const result=await updateGeneration(trainer,bull,runner,c,generation,{record:(b,label)=>record(b,c,'训练',generation,label),progress:(candidate,total)=>postMessage({type:'progress',generation,role:c.mode!=='neural'?'runner':generation%2?'bull':'runner',candidate,total}),stopped:()=>stop,yield:yieldTask});
+    if(result.cancelled)break;
+    gen=generation;bull=result.bull;runner=result.runner;
+    const results=group(bull,runner,c,Array.from({length:8},(_,i)=>(c.seed+0x70000000+i*7919)>>>0),'测试',gen,'当前双方 / 固定场景');
+    const metrics={generation:gen,bull:average(results,'bull'),runner:average(results,'runner'),win:results.filter(x=>x.caught).length/8,time:average(results,'time'),mode:c.mode,accepted:result.accepted,reason:result.reason,trainerVersion:2};
+    if(gen%10===0||k===c.generations-1)Object.assign(metrics,report(c,gen));
+    postMessage({type:'generation',generation:gen,role:result.role,bull,runner,trainer,metrics});await yieldTask();
+  }
+}catch(e){postMessage({type:'error',message:e.message});}finally{busy=false;postMessage({type:'busy',busy:false});}}
+onmessage=async({data:d})=>{
+  if(d.type==='stop'){stop=true;return;}if(busy)return;
+  if(d.type==='init'||d.type==='reset'){if(d.type==='reset'){session++;gen=0;}bull=makePolicy(d.seed,'bull',d.warm!==false);runner=makePolicy(d.seed+1,'runner',d.warm!==false);trainer=createTrainer(d.seed,bull,runner);ready();}
+  if(d.type==='train')train(d.config);
+  if(d.type==='load'){bull=d.bull;runner=d.runner;gen=d.generation||0;session++;trainer=validTrainer(d.trainer)?d.trainer:createTrainer(d.seed??42,bull,runner);ready();}
+  if(d.type==='evaluate'){busy=true;postMessage({type:'busy',busy:true});try{report(d.config,gen);const results=group(bull,runner,d.config,Array.from({length:8},(_,i)=>(d.config.seed+0x50000000+d.run*1009+i*7919)>>>0),'测试',gen,'额外随机测试');postMessage({type:'evaluated',bull:average(results,'bull'),runner:average(results,'runner'),win:results.filter(x=>x.caught).length/8});}finally{busy=false;postMessage({type:'busy',busy:false});}}
+  if(d.type==='duel')group(bull,runner,d.config,[d.seed],'演示',gen,'当前策略');
+};
