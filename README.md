@@ -1,5 +1,7 @@
 # 逐域 · 斗牛对抗训练实验室
 
+[在线实验室](https://yujionako.github.io/arena-pursuit-lab/) · [自动验证与部署](https://github.com/YujioNako/arena-pursuit-lab/actions/workflows/pages.yml)
+
 纯浏览器可运行项目，无需安装 npm 依赖。需要 Node.js 18 或以上提供本地 HTTP 服务。
 
 ```sh
